@@ -1,8 +1,11 @@
 package com.example.hhhhh.coolweather;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -21,6 +24,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.example.hhhhh.coolweather.gson.Forecast;
 import com.example.hhhhh.coolweather.gson.Weather;
+import com.example.hhhhh.coolweather.service.AutoUpdateService;
 import com.example.hhhhh.coolweather.util.HttpUtil;
 import com.example.hhhhh.coolweather.util.Utility;
 
@@ -60,6 +64,7 @@ public class WeatherActivity extends AppCompatActivity {
     public DrawerLayout drawerLayout;
 
     private Button navButton;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -153,7 +158,6 @@ public class WeatherActivity extends AppCompatActivity {
                         swipeRefresh.setRefreshing(false);
                     }
                 });
-
             }
         });
         loadBingPic();
@@ -179,18 +183,25 @@ public class WeatherActivity extends AppCompatActivity {
             infoText.setText(forecast.more.info);
             maxText.setText(forecast.temperature.max);
             minText.setText(forecast.temperature.min);
+            //forecastLayout.addView(view);
         }
         if(weather.aqi!=null){
             aqiText.setText(weather.aqi.city.aqi);
             pm25Text.setText(weather.aqi.city.pm25);
         }
-        String comfort="舒适度"+weather.suggestion.comfort.info;
-        String carWash="洗车指数"+weather.suggestion.carWash.info;
-        String sport="活动建议"+weather.suggestion.sport.info;
+        String comfort="舒适度:"+weather.suggestion.comfort.info;
+        String carWash="洗车指数:"+weather.suggestion.carWash.info;
+        String sport="活动建议:"+weather.suggestion.sport.info;
         comfortText.setText(comfort);
         carWashText.setText(carWash);
         sportText.setText(sport);
         weatherLayout.setVisibility(View.VISIBLE);
+        if(weather!=null&&"ok".equals(weather.status)){
+            Intent intent=new Intent(this,AutoUpdateService.class);
+            startService(intent);
+        }else{
+            Toast.makeText(WeatherActivity.this,"获取信息失败",Toast.LENGTH_SHORT).show();
+        }
     }
     private void loadBingPic(){
         String requestBingPic="http://guolin.tech/api/bing_pic";
